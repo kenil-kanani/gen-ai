@@ -1,7 +1,7 @@
 import { Agent , run , setDefaultOpenAIClient } from "@openai/agents";
 import AzureOpenAIClient from "@/lib/azureOpenAIClient";
 import { 
-    captureScreenshotTool, 
+    // captureScreenshotTool, 
     clickElementTool, 
     fillInputTool, 
     initBrowser, 
@@ -25,13 +25,14 @@ const BrowserAgent = new Agent({
         initBrowser,
         navigateTo,
         extractDOMSnapshotTool,
-        captureScreenshotTool,
+        // captureScreenshotTool,
         clickElementTool,
         fillInputTool,
         closeBrowser,
         scrollToPositionTool,
         userContextTool,
     ],
+
 })
 
 let messages = [];
@@ -45,7 +46,10 @@ export async function POST(req){
             messages.concat({
                 role: "user",
                 content: query,
-            })
+            }),
+            {
+                maxTurns: 30
+            }
         );
 
         messages = result.history;

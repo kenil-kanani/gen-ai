@@ -57,15 +57,15 @@ export const extractDOMSnapshotTool = tool({
     },
 });
 
-export const captureScreenshotTool = tool({
-    name: "captureScreenshot",
-    description: "Capture a screenshot of the current page and return it as a base64 string",
-    parameters: z.object({}),
-    execute: async () => {
-        console.log("Capturing screenshot");
-        return await captureScreenshot(page);
-    },
-});
+// export const captureScreenshotTool = tool({
+//     name: "captureScreenshot",
+//     description: "Capture a screenshot of the current page and return it as a base64 string",
+//     parameters: z.object({}),
+//     execute: async () => {
+//         console.log("Capturing screenshot");
+//         return await captureScreenshot(page);
+//     },
+// });
 
 export const clickElementTool = tool({
     name: "clickElement",
@@ -85,19 +85,21 @@ export const clickElementTool = tool({
 });
 
 export const scrollToPositionTool = tool({
-    name: "scrollToPosition",
-    description: "Scroll the page to a specific x and y position. You can use positive or negative values for x and y. Scroll to the either horizontal or vertical center of the page.",
-    parameters: z.object({
-        x: z.number().describe("The horizontal position to scroll to (can be negative)"),
-        y: z.number().describe("The vertical position to scroll to (can be negative)"),
-    }),
-    execute: async ({ x, y }) => {
-        console.log(`Scrolling to position x: ${x}, y: ${y}`);
-        await page.evaluate(({ x, y }) => {
-            window.scrollTo(x, y);
-        }, { x, y });
-        return `Scrolled to position x: ${x}, y: ${y}`;
-    },
+  name: "scrollToPosition",
+  description: "Scroll the page to an absolute x,y position using Playwright.",
+  parameters: z.object({
+    x: z.number().describe("Horizontal position"),
+    y: z.number().describe("Vertical position"),
+  }),
+  execute: async ({ x, y }) => {
+    const pg = (globalThis.page || (typeof page !== "undefined" ? page : null));
+    if (!pg) throw new Error("Browser not initialized.");
+
+    console.log("Scrolling to ", x, y);
+    await pg.evaluate(({ x, y }) => window.scrollTo(x, y), { x, y });
+    console.log("Scrolled to ", x, y);
+    return { x, y };
+  },
 });
 
 export const fillInputTool = tool({
@@ -121,7 +123,7 @@ export const fillInputTool = tool({
 
 export const userContextTool = tool({
     name: "userContext",
-    description: "Get the user context. This is the context of the user that is currently logged in to the browser.",
+    description: "Get the user context. Use this tool, especially when filling forms, to get the context of the user.",
     parameters: z.object({}),
     execute: async () => {
         return JSON.stringify(userContext);

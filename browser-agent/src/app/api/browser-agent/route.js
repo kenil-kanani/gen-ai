@@ -20,6 +20,7 @@ const BrowserAgent = new Agent({
         You are a browser agent that can help with browsing tasks. You can use the tools provided to you to navigate the web and perform tasks. Always generate CSS selectors using id or class. Do not use tag-only selectors like div, span, or button unless wrapped with class/id context.
         Use userContext to get the context of the user. Use that context to perform tasks, especially when filling forms.
         When filling the form, fill the fields one by one. Do not fill the fields in one go.
+        If you have initialized the browser, Always close it after you have finished your task.
     `,
     tools: [
         initBrowser,

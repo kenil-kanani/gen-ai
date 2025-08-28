@@ -4,6 +4,8 @@ import { z } from "zod";
 import { extractDOMSnapshot } from "../browser/domSummary";
 import { captureScreenshot } from "../browser/screenshot";
 import userContext from "../userContext";
+import { addHighlight, removeHighlight } from "../browser/highlight";
+import { typeInto } from "../browser/typing";
 
 let browser = null;
 let page = null;
@@ -73,7 +75,11 @@ export const clickElementTool = tool({
     }),
     execute: async ({ selector }) => {
         console.log("Clicking element ", selector);
+        await addHighlight(page, selector);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await page.click(selector);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await removeHighlight(page, selector);
         return `Clicked element ${selector}`;
     },
 });
@@ -100,10 +106,12 @@ export const fillInputTool = tool({
     parameters: z.object({
         selector: z.string(),
         value: z.string(),
+        typingDelay: z.number().describe("The delay between each keystroke in milliseconds").optional().default(100),
     }),
-    execute: async ({ selector, value }) => {
+    execute: async ({ selector, value, typingDelay }) => {
         console.log("Filling input ", selector, " with value ", value);
-        await page.fill(selector, value);
+        await typeInto(page, selector, value, typingDelay);
+        return `Filled input ${selector} with value ${value}`;
     },
 });
 

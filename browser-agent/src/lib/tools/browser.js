@@ -110,7 +110,11 @@ export const fillInputTool = tool({
     }),
     execute: async ({ selector, value, typingDelay }) => {
         console.log("Filling input ", selector, " with value ", value);
+        await addHighlight(page, selector);
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await typeInto(page, selector, value, typingDelay);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await removeHighlight(page, selector);
         return `Filled input ${selector} with value ${value}`;
     },
 });

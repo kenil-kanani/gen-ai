@@ -3,28 +3,30 @@ import AzureOpenAIClient from "@/lib/azureOpenAIClient";
 import { 
     captureScreenshotTool, 
     clickElementTool, 
-    extractPageSummaryTool, 
     fillInputTool, 
     initBrowser, 
     navigateTo,
     closeBrowser,
     scrollToPositionTool,
+    extractDOMSnapshotTool,
+    userContextTool,
 } from "@/lib/tools/browser";
 
 setDefaultOpenAIClient(AzureOpenAIClient);
 
 const BrowserAgent = new Agent({
     name: "Browser Agent",
-    instructions: "You are a browser agent that can help with browsing tasks. You can use the tools provided to you to navigate the web and perform tasks.",
+    instructions: "You are a browser agent that can help with browsing tasks. You can use the tools provided to you to navigate the web and perform tasks. Always generate CSS selectors using id or class. Do not use tag-only selectors like div, span, or button unless wrapped with class/id context.",
     tools: [
         initBrowser,
         navigateTo,
-        extractPageSummaryTool,
+        extractDOMSnapshotTool,
         captureScreenshotTool,
         clickElementTool,
         fillInputTool,
         closeBrowser,
         scrollToPositionTool,
+        userContextTool,
     ],
 })
 

@@ -1,8 +1,9 @@
 import { tool } from "@openai/agents";
 import { chromium } from "playwright";
 import { z } from "zod";
-import { extractPageSummary } from "../browser/domSummary";
+import { extractDOMSnapshot } from "../browser/domSummary";
 import { captureScreenshot } from "../browser/screenshot";
+import userContext from "../userContext";
 
 let browser = null;
 let page = null;
@@ -44,13 +45,13 @@ export const navigateTo = tool({
     },
 });
 
-export const extractPageSummaryTool = tool({
-    name: "extractPageSummary",
-    description: "Extract the summary of the current page and the clickable elements on the page",
+export const extractDOMSnapshotTool = tool({
+    name: "extractDOMSnapshot",
+    description: "Extract the DOM snapshot of the current page",
     parameters: z.object({}),
     execute: async () => {
-        console.log("Extracting page summary");
-        return await extractPageSummary(page);
+        console.log("Extracting DOM snapshot");
+        return await extractDOMSnapshot(page);
     },
 });
 
@@ -72,42 +73,8 @@ export const clickElementTool = tool({
     }),
     execute: async ({ selector }) => {
         console.log("Clicking element ", selector);
-        try {
-            // Wait for element to be visible and clickable
-            await page.waitForSelector(selector, { 
-                state: 'visible',
-                timeout: 10000 // 10 second timeout
-            });
-            
-            // Ensure element is in viewport
-            await page.evaluate((sel) => {
-                const element = document.querySelector(sel);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, selector);
-            
-            // Click with retry mechanism
-            await page.click(selector, { timeout: 5000 });
-            return `Successfully clicked element: ${selector}`;
-        } catch (error) {
-            console.error(`Failed to click element ${selector}:`, error.message);
-            
-            // Try alternative click methods if the first fails
-            try {
-                await page.evaluate((sel) => {
-                    const element = document.querySelector(sel);
-                    if (element) {
-                        element.click();
-                    } else {
-                        throw new Error('Element not found');
-                    }
-                }, selector);
-                return `Successfully clicked element using alternative method: ${selector}`;
-            } catch (fallbackError) {
-                throw new Error(`Failed to click element '${selector}': ${fallbackError.message}`);
-            }
-        }
+        await page.click(selector);
+        return `Clicked element ${selector}`;
     },
 });
 
@@ -139,3 +106,12 @@ export const fillInputTool = tool({
         await page.fill(selector, value);
     },
 });
+
+export const userContextTool = tool({
+    name: "userContext",
+    description: "Get the user context. This is the context of the user that is currently logged in to the browser.",
+    parameters: z.object({}),
+    execute: async () => {
+        return JSON.stringify(userContext);
+    },
+})
